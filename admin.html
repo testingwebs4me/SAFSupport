@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SAF Tickets — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;500;600;700;800;900&family=IBM+Plex+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0a0a0a;
+      --blue: #0047FF;
+      --white: #f7f6f2;
+      --paper: #edeae3;
+      --line: #c8c4ba;
+      --faint: #dedad3;
+      --mid: #888078;
+    }
+
+    body {
+      background: var(--white);
+      color: var(--ink);
+      font-family: 'IBM Plex Mono', monospace;
+      min-height: 100vh;
+    }
+
+    /* LOGIN */
+    #loginScreen {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--ink);
+    }
+
+    .login-wrap {
+      width: 100%; max-width: 420px;
+      padding: 24px;
+    }
+
+    .login-header {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 48px;
+    }
+
+    .login-dot { width: 12px; height: 12px; background: var(--blue); border-radius: 50%; }
+
+    .login-brand {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--white);
+    }
+
+    .login-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 3.2rem;
+      line-height: 0.9;
+      text-transform: uppercase;
+      color: var(--white);
+      margin-bottom: 44px;
+    }
+
+    .login-title em { font-style: normal; color: var(--blue); }
+
+    .login-field-lbl {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.65rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--mid);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    #pwInput {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid rgba(255,255,255,0.2);
+      padding: 12px 2px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 1.4rem;
+      color: var(--white);
+      outline: none;
+      letter-spacing: 0.3em;
+      transition: border-color 0.15s;
+      -webkit-appearance: none;
+      margin-bottom: 24px;
+    }
+
+    #pwInput:focus { border-color: var(--blue); }
+    #pwInput::placeholder { color: rgba(255,255,255,0.15); letter-spacing: 0.1em; font-size: 1rem; }
+
+    .login-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      background: var(--white);
+      color: var(--ink);
+      border: none;
+      padding: 16px 40px;
+      cursor: pointer;
+      transition: background 0.15s;
+      outline: none;
+    }
+
+    .login-btn:hover { background: var(--blue); color: var(--white); }
+
+    .login-err {
+      font-size: 0.62rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: #e74c3c;
+      margin-top: 14px;
+      display: none;
+    }
+    .login-err.show { display: block; }
+
+    /* TOPBAR */
+    #adminPage { display: none; }
+    #adminPage.show { display: block; }
+
+    .topbar {
+      border-bottom: 3px solid var(--ink);
+      display: flex;
+      align-items: stretch;
+      height: 56px;
+    }
+
+    .topbar-brand {
+      display: flex; align-items: center;
+      padding: 0 28px;
+      border-right: 3px solid var(--ink);
+      gap: 12px;
+    }
+
+    .brand-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900; font-size: 1.35rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+
+    .brand-dot { width: 10px; height: 10px; background: var(--blue); border-radius: 50%; }
+
+    .topbar-tag {
+      display: flex; align-items: center;
+      padding: 0 24px;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      color: var(--mid);
+      text-transform: uppercase;
+      flex: 1;
+    }
+
+    .topbar-right {
+      display: flex; align-items: stretch;
+    }
+
+    .count-box {
+      display: flex; align-items: center;
+      padding: 0 22px;
+      border-left: 3px solid var(--ink);
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--mid);
+      gap: 6px;
+    }
+
+    .count-box strong { font-weight: 600; color: var(--blue); font-size: 0.9rem; }
+
+    .logout-btn {
+      display: flex; align-items: center;
+      padding: 0 24px;
+      border-left: 3px solid var(--ink);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: none;
+      border-right: none;
+      cursor: pointer;
+      color: var(--mid);
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .logout-btn:hover { background: var(--ink); color: var(--white); }
+
+    /* ADMIN HERO */
+    .admin-hero {
+      background: var(--paper);
+      border-bottom: 3px solid var(--ink);
+      padding: 36px 48px 32px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .admin-hero h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      text-transform: uppercase;
+      line-height: 0.9;
+      letter-spacing: -0.01em;
+    }
+
+    /* FILTERS */
+    .filter-bar {
+      display: flex;
+      border-bottom: 3px solid var(--ink);
+    }
+
+    .filter-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 14px 28px;
+      border: none;
+      border-right: 2px solid var(--line);
+      background: none;
+      color: var(--mid);
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+    }
+
+    .filter-btn:hover { background: var(--faint); color: var(--ink); }
+    .filter-btn.active { background: var(--ink); color: var(--white); }
+
+    /* MAIN */
+    .admin-main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 48px 80px;
+    }
+
+    /* EMPTY STATE */
+    .empty {
+      text-align: center;
+      padding: 80px 0;
+      border-bottom: 1.5px solid var(--line);
+    }
+
+    .empty-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 7rem;
+      color: var(--faint);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .empty p {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--mid);
+    }
+
+    /* TICKET ROW */
+    .ticket {
+      border-bottom: 1.5px solid var(--line);
+      transition: background 0.12s;
+    }
+
+    .ticket-row {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 0;
+      padding: 0;
+      cursor: pointer;
+    }
+
+    .t-topic {
+      padding: 18px 20px;
+      border-right: 1.5px solid var(--line);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .t-design { color: var(--blue); }
+    .t-function { color: var(--ink); }
+    .t-content { color: var(--mid); }
+
+    .t-main {
+      padding: 18px 24px;
+    }
+
+    .t-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 1.05rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .t-meta {
+      font-size: 0.6rem;
+      color: var(--mid);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .t-has-file { color: var(--blue); }
+
+    .t-id {
+      padding: 18px 20px;
+      border-left: 1.5px solid var(--line);
+      font-size: 0.6rem;
+      color: var(--mid);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+    }
+
+    .t-chevron {
+      padding: 18px 20px;
+      border-left: 1.5px solid var(--line);
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 900;
+      font-size: 0.85rem;
+      color: var(--mid);
+      transition: transform 0.25s;
+      text-align: center;
+    }
+
+    .ticket.open .t-chevron { transform: rotate(180deg); }
+    .ticket.open { background: var(--paper); }
+
+    /* EXPANDED */
+    .ticket-expand {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, opacity 0.25s ease;
+      opacity: 0;
+    }
+
+    .ticket.open .ticket-expand {
+      max-height: 700px;
+      opacity: 1;
+    }
+
+    .ticket-expand-inner {
+      padding: 0 24px 28px;
+      border-top: 1.5px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px 32px;
+    }
+
+    .exp-block { display: flex; flex-direction: column; gap: 8px; }
+    .exp-block.full { grid-column: 1 / -1; }
+
+    .exp-lbl {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.62rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--mid);
+    }
+
+    .exp-val {
+      font-size: 0.85rem;
+      color: var(--ink);
+      line-height: 1.6;
+    }
+
+    .msg-box {
+      background: var(--white);
+      border: 2px solid var(--ink);
+      padding: 14px 16px;
+      font-size: 0.85rem;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      color: var(--ink);
+    }
+
+    /* FILE */
+    .file-block {
+      border: 2px solid var(--ink);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--white);
+    }
+
+    .file-block-icon {
+      font-size: 1.2rem;
+    }
+
+    .file-block-info { flex: 1; min-width: 0; }
+    .file-block-name {
+      font-size: 0.8rem;
+      font-weight: 500;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-block-size {
+      font-size: 0.62rem;
+      color: var(--mid);
+      letter-spacing: 0.05em;
+      margin-top: 3px;
+    }
+
+    .dl-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: var(--ink);
+      color: var(--white);
+      border: none;
+      padding: 8px 18px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.12s;
+    }
+
+    .dl-btn:hover { background: var(--blue); }
+
+    .img-thumb {
+      margin-top: 10px;
+      border: 2px solid var(--line);
+      max-width: 220px;
+    }
+
+    .img-thumb img { width: 100%; display: block; }
+
+    /* DELETE */
+    .del-btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: transparent;
+      color: var(--mid);
+      border: 1px solid var(--line);
+      padding: 7px 16px;
+      cursor: pointer;
+      transition: all 0.12s;
+      margin-top: 12px;
+    }
+
+    .del-btn:hover { border-color: #c0392b; color: #c0392b; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    .ticket { animation: fadeIn 0.25s ease both; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="loginScreen">
+    <div class="login-wrap">
+      <div class="login-header">
+        <div class="login-dot"></div>
+        <div class="login-brand">SAF Tickets</div>
+      </div>
+      <div class="login-title">Admin<br><em>Panel.</em></div>
+      <label class="login-field-lbl" for="pwInput">Password</label>
+      <input type="password" id="pwInput" placeholder="Enter password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') tryLogin()"/>
+      <button class="login-btn" onclick="tryLogin()">Enter</button>
+      <div class="login-err" id="loginErr">— Incorrect password</div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="adminPage">
+    <div class="topbar">
+      <div class="topbar-brand">
+        <div class="brand-dot"></div>
+        <span class="brand-name">SAF Tickets</span>
+      </div>
+      <div class="topbar-tag">Admin Panel</div>
+      <div class="topbar-right">
+        <div class="count-box">Total&nbsp;<strong id="totalCount">0</strong></div>
+        <button class="logout-btn" onclick="logout()">Log Out</button>
+      </div>
+    </div>
+
+    <div class="admin-hero">
+      <h2>Ticket<br>Inbox</h2>
+    </div>
+
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('Design',this)">Design</button>
+      <button class="filter-btn" onclick="setFilter('Function',this)">Function</button>
+      <button class="filter-btn" onclick="setFilter('Content',this)">Content</button>
+    </div>
+
+    <div class="admin-main">
+      <div id="ticketList"></div>
+    </div>
+  </div>
+
+  <script>
+    const PASS = '0987';
+    let tickets = [];
+    let activeFilter = 'all';
+
+    function tryLogin() {
+      if (document.getElementById('pwInput').value === PASS) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPage').classList.add('show');
+        load();
+      } else {
+        document.getElementById('loginErr').classList.add('show');
+        document.getElementById('pwInput').value = '';
+        document.getElementById('pwInput').focus();
+      }
+    }
+
+    function logout() {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('adminPage').classList.remove('show');
+      document.getElementById('pwInput').value = '';
+      document.getElementById('loginErr').classList.remove('show');
+    }
+
+    function load() {
+      tickets = JSON.parse(localStorage.getItem('saf_tickets') || '[]');
+      document.getElementById('totalCount').textContent = tickets.length;
+      render();
+    }
+
+    function setFilter(f, btn) {
+      activeFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      render();
+    }
+
+    function render() {
+      const list = document.getElementById('ticketList');
+      const filtered = activeFilter === 'all' ? tickets : tickets.filter(t => t.topic === activeFilter);
+
+      if (!filtered.length) {
+        list.innerHTML = `<div class="empty">
+          <div class="empty-num">0</div>
+          <p>No tickets found</p>
+        </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map((t, i) => buildTicket(t, i)).join('');
+    }
+
+    function buildTicket(t, i) {
+      const d = new Date(t.timestamp);
+      const ds = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      const ts = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      const hasFile = !!t.file;
+      const isImg = hasFile && t.file.type.startsWith('image/');
+
+      const fileSection = hasFile ? `
+        <div class="exp-block full">
+          <div class="exp-lbl">Attachment</div>
+          <div class="file-block">
+            <div class="file-block-icon">${isImg ? '🖼' : '📄'}</div>
+            <div class="file-block-info">
+              <div class="file-block-name">${esc(t.file.name)}</div>
+              <div class="file-block-size">${fmtBytes(t.file.size)}</div>
+            </div>
+            <button class="dl-btn" onclick="dlFile('${t.id}')">Download</button>
+          </div>
+          ${isImg ? `<div class="img-thumb"><img src="${t.file.data}" loading="lazy"></div>` : ''}
+        </div>` : '';
+
+      const phoneSection = t.phone ? `
+        <div class="exp-block">
+          <div class="exp-lbl">Phone</div>
+          <div class="exp-val">${esc(t.phone)}</div>
+        </div>` : '';
+
+      return `
+        <div class="ticket" id="card-${t.id}" style="animation-delay:${i*0.04}s">
+          <div class="ticket-row" onclick="toggle('${t.id}')">
+            <div class="t-topic t-${(t.topic||'').toLowerCase()}">${t.topic}</div>
+            <div class="t-main">
+              <div class="t-name">${esc(t.name)}</div>
+              <div class="t-meta">
+                <span>${ds} · ${ts}</span>
+                ${hasFile ? '<span class="t-has-file">↑ File</span>' : ''}
+              </div>
+            </div>
+            <div class="t-id">${t.id}</div>
+            <div class="t-chevron">▼</div>
+          </div>
+          <div class="ticket-expand">
+            <div class="ticket-expand-inner">
+              <div class="exp-block full">
+                <div class="exp-lbl">Message</div>
+                <div class="msg-box">${esc(t.message)}</div>
+              </div>
+              ${fileSection}
+              ${phoneSection}
+              <div class="exp-block full">
+                <button class="del-btn" onclick="del('${t.id}')">Delete Ticket</button>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function toggle(id) {
+      const card = document.getElementById('card-' + id);
+      const wasOpen = card.classList.contains('open');
+      document.querySelectorAll('.ticket.open').forEach(c => c.classList.remove('open'));
+      if (!wasOpen) card.classList.add('open');
+    }
+
+    function dlFile(id) {
+      const t = tickets.find(x => x.id === id);
+      if (!t?.file) return;
+      const a = document.createElement('a');
+      a.href = t.file.data; a.download = t.file.name; a.click();
+    }
+
+    function del(id) {
+      if (!confirm('Delete this ticket?')) return;
+      tickets = tickets.filter(t => t.id !== id);
+      localStorage.setItem('saf_tickets', JSON.stringify(tickets));
+      document.getElementById('totalCount').textContent = tickets.length;
+      render();
+    }
+
+    function fmtBytes(b) {
+      if (b < 1024) return b + ' B';
+      if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+      return (b/1048576).toFixed(1) + ' MB';
+    }
+
+    function esc(s) {
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    setInterval(() => {
+      if (document.getElementById('adminPage').classList.contains('show')) load();
+    }, 10000);
+  </script>
+</body>
+</html>
