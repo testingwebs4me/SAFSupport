@@ -199,8 +199,9 @@
       const ts      = t.timestamp?.toDate?.() || new Date();
       const ds      = ts.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
       const tm      = ts.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
-      const hasFile = !!t.fileURL;
+      const hasFile = !!(t.fileURL || t.fileData);
       const isImg   = hasFile && t.fileType?.startsWith('image/');
+      const fileSrc  = t.fileData || t.fileURL;
 
       const fileSection = hasFile ? `
         <div class="exp-block full">
@@ -211,9 +212,9 @@
               <div class="file-block-name">${esc(t.fileName || 'file')}</div>
               <div class="file-block-size">${t.fileSize ? fmtBytes(t.fileSize) : ''}</div>
             </div>
-            <a class="dl-btn" href="${t.fileURL}" target="_blank" download="${esc(t.fileName||'file')}">Download</a>
+            <a class="dl-btn" href="${fileSrc}" target="_blank" download="${esc(t.fileName||'file')}">Download</a>
           </div>
-          ${isImg ? `<div class="img-thumb"><img src="${t.fileURL}" loading="lazy"></div>` : ''}
+          ${isImg ? `<div class="img-thumb"><img src="${fileSrc}" loading="lazy"></div>` : ''}
         </div>` : '';
 
       const phoneSection = t.phone ? `
